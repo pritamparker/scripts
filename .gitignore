@@ -1,0 +1,14 @@
+.idea/
+.pycharm/
+.idea
+.pycharm
+*.mp3
+*.mp4
+*.m4a
+*.aac
+*.ogg
+*.png
+*.jpg
+*.jpeg
+*.pdf
+*.py[cod]
