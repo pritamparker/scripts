@@ -100,8 +100,7 @@ def normalise(keywords):
     if choice.lower() == 'y':
         return keywords
     if choice.lower() == 'n':
-        text = input()
-        return text
+        return input()
     return keywords
 
 def searchItunes(args, query):
@@ -131,7 +130,7 @@ def searchItunes(args, query):
         tag['artworkURL'] = trackSelected['artworkUrl100'].replace('100x100', '600x600')
     else:
         tag['artworkURL'] = trackSelected['artworkUrl100'].replace('100x100', '400x400')
-    tag['uri'] = trackSelected['collectionId'] + ':tagdata' + trackSelected['trackId']
+    tag['uri'] = trackSelected['collectionId'] + ':' + trackSelected['trackId']
     return tag
 
 def searchSpotify(args, query):
@@ -156,7 +155,7 @@ def searchSpotify(args, query):
     tag['artist'] = trackSelected['artists'][0]['name']
     tag['album'] = trackSelected['album']['name']
     tag['trackNumber'] = trackSelected['track_number']
-    tag['totalTracks'] = 0
+    tag['totalTracks'] = 1
     if args.b:
         tag['artworkURL'] = trackSelected['album']['images'][0]['url']
     else:
@@ -204,7 +203,7 @@ def main(argv):
             tagmp3(data, audio)
             print(color.GREEN + 'tagged!  ⋆ ᴗ ⋆' + color.END)
         except Exception:
-            print(color.RED + 'failed!  (；ᴗ；)' + color.END)
+            print(color.RED + 'failed! (；ᴗ；)' + color.END)
 
 
 def tagmp3(tagdata, audio):
@@ -220,7 +219,7 @@ def tagmp3(tagdata, audio):
     #if 'TCON' not in audio.keys():
     #    audio['TCON'] = TCON(encoding=3, text=tagdata['genre'])
     if 'APIC:' not in audio.keys():
-        imgdata=requests.get(tagdata['artwork']).content
+        imgdata=requests.get(tagdata['artworkURL']).content
         audio['APIC'] = APIC(encoding=3,'image/jpeg',desc='Cover',data=imgdata)
     audio['WOAF'] = WOAF(encoding=3, text=tagdata['api']+tagdata['uri'])
     audio.save()
