@@ -87,11 +87,11 @@ def normalise(keywords):
     keywords=keywords.replace('-','+')
     keywords=keywords.replace('+++','+')
     keywords=keywords.replace('[]', '')
-    keywords=keywords.replace('(+)', '')
+    keywords=keywords.replace('(+)', '+')
     keywords=keywords.replace('[+]', '')
-    keywords=keywords.replace('()', '')
-    keywords=keywords.replace('(', '')
-    keywords=keywords.replace(')', '')
+    keywords=keywords.replace('()', '+')
+    keywords=keywords.replace('(', '+')
+    keywords=keywords.replace(')', '+')
     keywords=keywords.replace('**', '')
     print('accept ' + color.GREEN + keywords + color.END + '(y/n)')
     choice = input()
@@ -231,7 +231,7 @@ def tagmp4(tagdata, audio):
     audio[b'\xa9alb'] = tagdata['album']
     audio[b'\xa9ART'] = tagdata['artist']
     #audio[b'\xa9gen'] = tagdata['genre']
-    audio[b'trkn'] = [tagdata['trackNumber'], tagdata['totalTracks']]
+    audio[b'trkn'] = [(tagdata['trackNumber'], tagdata['totalTracks'])]
     audio[b'\xa9cmt'] = tagdata['api']+tagdata['uri']
     pic = requests.get(tagdata['artworkURL'])
     covr = []
