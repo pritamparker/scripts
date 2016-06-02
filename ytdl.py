@@ -16,23 +16,22 @@ HDAudio = os.getenv("HDAudio")
 def getyt(url):
     return pafy.new(url)
 
+ARIA_OPTS = ['-k1M', '-x4']
 
 def aria(stream, filename=None):
     if not filename:
         filename = stream.filename
     if not os.path.exists(filename):
-        args = ['aria2c', '-o', filename, stream.url_https]
+        args = ['aria2c', *ARIA_OPTS, '-o', filename, stream.url_https]
         subprocess.call(args)
 
 
 def getaudio(audiostreams):
     stream = None
     if HDAudio:
-        stream = audiostreams[-1]
+        return audiostreams[-1]
     else:
-        stream = audiostreams[0]
-    # stream.filename = stream.filename.replace("webm", "ogg")
-    return stream
+        return audiostreams[0]
 
 
 def getvideo(videostreams):
@@ -70,7 +69,6 @@ def main():
         for video in args.video:
             download(getyt(video))
     if args.pl:
-        print args.pl
         playlist = pafy.get_playlist(args.pl)
         for i in playlist['items']:
             download(i['pafy'])
