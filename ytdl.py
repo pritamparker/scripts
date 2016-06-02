@@ -63,16 +63,17 @@ def download(yt):
 
 def main():
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('-p','--pl', nargs='+', help='playlist url')
-    parser.add_argument('videos', metavar='video', nargs='+', help='individual video urls')
+    parser.add_argument('-p','--pl', help='playlist url')
+    parser.add_argument('-v', '--video', nargs='?', help='video url')
     args = parser.parse_args()
-    if args.videos:
-        for video in args.videos:
+    if args.video:
+        for video in args.video:
             download(getyt(video))
     if args.pl:
-        for playlist in args.pl:
-            for i in playlist['items']:
-                download(i['pafy'])
+        print args.pl
+        playlist = pafy.get_playlist(args.pl)
+        for i in playlist['items']:
+            download(i['pafy'])
 
 
 if __name__ == '__main__':
