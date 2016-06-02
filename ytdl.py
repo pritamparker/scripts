@@ -1,59 +1,79 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+description = "This script downloads individual streams from YT and muxes them"
 
 import pafy
-import os
+import os, sys
 import subprocess
 import logging
+import argparse
 logging.getLogger().setLevel(logging.ERROR)
 
-
-def aria(stream):
-    args = ['aria2c', '-o', stream.filename, stream.url]
-    subprocess.call(args)
-
-
-def convaudio(file):
-    conv_args = ['ffmpeg', '-i', file, '-c:a', 'libfdk_aac', '-profile:a', 
-                'aac_he_v2', '-b:a', '24k', file[0:-4]+'-done.m4a']
-    subprocess.call(conv_args) 
-    os.remove(file)
-    os.rename(file[0:-4]+'-done.m4a', file)
-
-
-def getvideo(videostreams):
-    #print(videostreams)
-    l = [ "video:webm@854x480", "video:m4v@854x480", "video:webm@640x480",
-        "video:m4v@640x360"]
-    for i in l:
-        for vid in videostreams:
-            if vid.__str__() == i:
-                print(vid)
-                return vid
-
+HDVideo = os.getenv("HDVideo")
+HDAudio = os.getenv("HDAudio")
 
 def getyt(url):
     return pafy.new(url)
 
 
-def techtalk(yt):
-    audio = yt.audiostreams.pop()
+def aria(stream, filename=None):
+    if not filename:
+        filename = stream.filename
+    if not os.path.exists(filename):
+        args = ['aria2c', '-o', filename, stream.url_https]
+        subprocess.call(args)
+
+
+def getaudio(audiostreams):
+    stream = None
+    if HDAudio:
+        stream = audiostreams[-1]
+    else:
+        stream = audiostreams[0]
+    # stream.filename = stream.filename.replace("webm", "ogg")
+    return stream
+
+
+def getvideo(videostreams):
+    #print(videostreams)
+    if HDVideo:
+        res = 720
+    else:
+        res = 480
+    for vid in videostreams:
+        if str(vid).startswith("video") and vid.dimensions[1] <= res:
+            return vid
+    print(videostreams)
+
+
+def download(yt):
+    yt.videostreams.sort(key=lambda x: x.dimensions[1], reverse=True)
+    audio = getaudio(yt.audiostreams)
     video = getvideo(yt.videostreams)
-    # print("====================="+video.__str__())
-    aria(audio)
-    convaudio(audio.filename)
-    if video:
-        aria(video)
-        conv_args = ['ffmpeg', '-i', video.filename, '-i', audio.filename,
-                     '-c:a', 'copy', '-c:v', 'copy', audio.filename[0:-4]+'.'+'mkv']
-        if subprocess.call(conv_args) == 0:
-            os.remove(video.filename)
-            os.remove(audio.filename)
+    audiofile = audio.filename.replace("webm", "ogg")
+    aria(audio, audiofile)
+    aria(video)
+    conv_args = ['ffmpeg', '-i', video.filename, '-i', audiofile,
+                 '-c:a', 'copy', '-c:v', 'copy', video.title +'.mkv']
+    if subprocess.call(conv_args) == 0:
+        os.remove(video.filename)
+        os.remove(audiofile)
 
 
-url = ""
+def main():
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('-p','--pl', nargs='+', help='playlist url')
+    parser.add_argument('videos', metavar='video', nargs='+', help='individual video urls')
+    args = parser.parse_args()
+    if args.videos:
+        for video in args.videos:
+            download(getyt(video))
+    if args.pl:
+        for playlist in args.pl:
+            for i in playlist['items']:
+                download(i['pafy'])
 
-pl = pafy.get_playlist(url)
-for i in pl['items']:
-    techtalk(i['pafy'])
+
+if __name__ == '__main__':
+    main()
